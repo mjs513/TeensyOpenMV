@@ -21,8 +21,8 @@
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-#define telem Serial3
-#define telem2  Serial2
+#define telem Serial3   //Connection for radio on 3, change to serial for telem
+#define telem2  Serial2 //Connection for OpenMV
 
 #define rad2deg 57.2957795131
 #define deg2rad 0.01745329251
@@ -33,7 +33,7 @@
 #define interval 100
 #define interval1 2000
 #define defaultTurnTime 1000
-#define defaultFwdTime 10000 //was 7000
+#define defaultFwdTime 1000 //was 7000
 #define defaultRevTime 700
 #define defaultTelemTime 1000
 #define defaultWayPointTime 1000
@@ -44,12 +44,21 @@
 //Bubble Rebound Parameters
 const float V = 21;
 const float Ki = 0.2;
+int obsDist = 47;
+float MIN_DISTANCE = 10;
+
+int fowardheadThreshold = 29; //was 49, 39, 29; was 27, increase to 32 (2/6)
 
 //compass reads
 //#define DEC_ANGLE -13.1603  // -13.1603 degrees for Flushing, NY
 #define DEC_ANGLE 0
 
-const int N = 31;  //was 10, 12 for 12 readings, was 12
+// Waypoints  Constants
+#define HEADING_TOLERANCE 5     // tolerance +/- (in degrees) within which we don't attempt to turn to intercept targetHeading
+float wp_heading;
+
+
+const int N = 30;  //was 10, 12 for 12 readings, was 12
 const int angle = 6;  //was 20 degrees, was 15 for 12
 
 //const int N = 25;  //was 10, 12 for 12 readings, was 12
@@ -67,10 +76,9 @@ int TURN_SPEED_DIFF = 75;
 //Set Motor Speed
 int speed = 150;
 int turnSpeed = 150;
-float lf_mtr_adj = 1.5;
-float rr_mtr_adj = 0.97;
-float lr_mtr_adj = 1.15;
-float rf_mtr_adj = 1.0;
+float lf_mtr_adj = 0.87;
+float rt_mtr_adj = 1.0;
+
 int turn_time_mult = 2;
 //int turn_time;
 
@@ -167,9 +175,12 @@ uint32_t ulProgramModeExitTime = 0;
 
 
 //***Odometry
-#define TRACK 8.0
-#define WHEEL_DIA 3.0
+#define TRACK 4.4
+#define WHEEL_DIA 2.3
 #define CLICKS_PER_REV 350
+
+
+
 
 
 

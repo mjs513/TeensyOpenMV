@@ -1,15 +1,23 @@
 #include <Wire.h>
+#include <EEPROM.h>
 #include <StopWatch.h>
 #include <elapsedMillis.h>
 #include <Streaming.h>
 #include <StopWatch.h>
 #include <Servo.h>
-
+#include <Encoder.h>
+#undef min
+#undef max
+#include <vector>
 #include "Constants.h"
 #include "IOpins.h"
 
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
+
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
 
 #include <VL53L0X.h>
 
@@ -47,6 +55,7 @@ int roam = 0;
 int stop_flag = 0;
 int rc_mode_toggle = 0;
 int rc_sw_on = 0;
+int odo_mode_toggle = 0;
 
 //rcarduino shared variables
 // holds the update flags defined above
@@ -81,6 +90,7 @@ elapsedMillis motorFwdRunTime;
 elapsedMillis motorTurnTime;
 elapsedMillis motorRevTime;
 elapsedMillis turn_timer;
+elapsedMillis odo_timer;
 
 StopWatch etm_millis;
 
@@ -95,6 +105,36 @@ int gapAngle[10];
 float gapDist[10];
 int i, j, k;
 
+//Globals
+float roll, pitch;
+float fXg = 0;
+float fYg = 0;
+float fZg = 0;
+float gyroz, accelx, accely;
+
+// global for heading from compass
+float yar_heading, new_heading;
+float rebound_angle;
+
+// Compass navigation
+float targetHeading,              // where we want to go to reach current waypoint
+      currentHeading,             // where we are actually facing now
+      headingError,               // signed (+/-) difference between targetHeading and currentHeading
+	    init_heading;
+
+float pos_x,
+      pos_y,
+      ENCODER_SCALE_FACTOR;
+
+//encoder variables
+long ticksRR,
+     ticksLR;
+
+/* Set the delay between fresh samples for BNO055*/
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+	  
 void setup() {
 	telem.begin(57600);           // set up Serial library at 9600 bps
   Wire.begin();
@@ -104,6 +144,8 @@ void setup() {
   sensor.setTimeout(500);
   //sensor.startContinuous();
   telem << "VL53L0X Initialized" << endl;
+
+    BNO055_Init();
   
 	AFMS.begin();  // create with the default frequency 1.6KHz
   telem.println("Adafruit Motorshield v2 - Initialized!");
@@ -241,6 +283,16 @@ void loop()
       toggleRC();
       break;
 
+    case 'o' :
+      telem << "Odometry Activated" << endl;
+      toggleOdo();
+      break;
+
+    case 'g' :
+      telem.println("Read Sensors and turn");
+      readSensors();
+      break;
+
     case 'e' : 
       motorFwdRunTime = 0;
       motorFwd = 0;
@@ -254,7 +306,8 @@ void loop()
       stop_flag = 0; 
       motorFwdRunTime = 0;
       break;
-    }      
+    }
+          
     delay(1);  
     telem.println("I'm Ready to receive telem Commands![f, b, r, l, s, t]"); // Tell us I"m ready
   }
@@ -265,14 +318,21 @@ void loop()
   else if(roam == 1){  //If roam active- drive autonomously
     goRoam();
     }
-  
+
+  if(odo_mode_toggle == 0){ 
+      //just listen for telem commands and wait
+     }
+  else if(odo_mode_toggle == 1) {  //If roam active- drive autonomously
+    toggleOdo();
+    }
+	
   if(rc_mode_toggle == 0){ 
       //just listen for telem commands and wait
       }
   else if(rc_mode_toggle == 1) {  //If roam active- drive autonomously
     goRC();
     }
-
+  
   if(unRCInShared > RC_MODE_TOGGLE && rc_mode_toggle == 0) {
         telem << "toggle RC Mode On via SW" << endl; 
         rc_sw_on = 1;
@@ -313,7 +373,6 @@ void toggleRC(){
     mStop();
     etm_millis.stop();
     etm_millis.reset();
-    noInterrupts();
     telem.println("De-activated RC Mode");
 	  telem.println("I'm Ready to receive telem Commands![g, f, b, r, l, s, t, c, w, o]"); // Tell us I"m ready
   }
@@ -332,6 +391,22 @@ static void smartDelay2(unsigned long ms)
     //send_telemetry();
   } while (millis() - start < ms);
 }
+
+void toggleOdo(){
+  if(odo_mode_toggle == 0) {
+    odo_mode_toggle = 1;
+    telem << "Odometry Nav Activated" << endl;
+    telem.println("I'm Ready to receive telem Commands![f (inches), b (inches), r (degs), l (degs), s, o]");
+    pos_x = pos_y = 0;
+    odometry();
+  } else {
+    odo_mode_toggle = 0;
+    mStop();
+    telem << "Odometry Nav De-activated" << endl;
+    telem.println("I'm Ready to receive telem Commands![g, f, b, r, l, s, t, c, w, o]"); // Tell us I"m ready
+  }
+}
+
 
 
 

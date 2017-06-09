@@ -24,12 +24,19 @@
 //////////////////////////////////////////////////////
 
 const int panServopin = 23; // signal input of headservo, was 8.
-const int tiltServopin = 24; // signal input of headservo, was 8.
+const int tiltServopin = 28; // signal input of headservo, was 8.
 
 // Assign your rc channel in pins
 int THROTTLE_IN_PIN = 21;
 int STEERING_IN_PIN = 20;
 int RCMODE_IN_PIN = 22;
+
+// read encoders
+const int l_encoder = 24;
+const int r_encoder = 24;
+Encoder encB(l_encoder, r_encoder);
+Encoder encA(25, 25);
+
 
 
 

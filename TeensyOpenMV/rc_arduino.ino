@@ -166,11 +166,14 @@
 				toggleRC();
 				return;
 			}
+     if(val == 'g') {
+      readSensors();
+     }
 		}
 
     //Send telemetry data to radio
     //send_telemetry();
-    readSensors();
+    //readSensors();
 
     if(unRCInShared < RC_MODE_TOGGLE && rc_sw_on == 1) {
         mStop();
@@ -186,6 +189,15 @@
 		  case DIRECTION_FORWARD:  
 			  if(gGear == GEAR_FULL) {
 					mForward();
+          //getTicks();
+			   if(sensor.readRangeSingleMillimeters()/10 < obsDist) {
+					mStop();
+			   }
+          if(motorFwd > defaultFwdTime){
+            if((sensor.readRangeSingleMillimeters()/10) < fowardheadThreshold) {
+              mStop();
+            }
+          }
 				}
 			  break;
 		  case DIRECTION_REVERSE:
@@ -254,6 +266,9 @@ bool rangeTest(uint16_t number, uint16_t lower, uint16_t upper) {
       return false;
     }
 }
+
+
+
 
 
 

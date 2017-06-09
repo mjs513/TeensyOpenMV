@@ -27,8 +27,9 @@ void mForward()
 { 
   //gDirection = DIRECTION_FORWARD;
   motor_on == 1;
-	lMotor->setSpeed(throttleLeft);
-	rMotor->setSpeed(throttleRight);
+	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
+	rMotor->setSpeed(throttleRight*rt_mtr_adj);
+	//getTicks();
 	lMotor->run(FORWARD); // Motor 1 goes forward
 	rMotor->run(FORWARD); // Motor 2 goes forward
 	//telem << "Going forward" << endl;
@@ -40,8 +41,8 @@ void mBackward()
 {
   //gDirection = DIRECTION_BACKWARD;
   motor_on = 1;
-	lMotor->setSpeed(throttleLeft);
-	rMotor->setSpeed(throttleRight);
+	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
+	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	lMotor->run(BACKWARD); // Motor 2 goes back
 	rMotor->run(BACKWARD); // Motor 1 goes back
   //telem.println("Backward");
@@ -51,8 +52,8 @@ void mRight()
 {
 	//gDirection = DIRECTION_RIGHT;
 	motor_on = 1;
-	lMotor->setSpeed(throttleLeft);
-	rMotor->setSpeed(throttleRight);
+	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
+	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	rMotor->run(BACKWARD); // Turns off motor 2
 	lMotor->run(FORWARD); // Motor 1 goes forward
 	//telem.println("Right");
@@ -62,8 +63,8 @@ void mLeft()
 {
 	//gDirection = DIRECTION_LEFT;
 	motor_on = 1;
-	lMotor->setSpeed(throttleLeft);
-	rMotor->setSpeed(throttleRight);
+	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
+	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	rMotor->run(FORWARD); // Motor 2 goes forward
 	lMotor->run(BACKWARD); // turns off motor 1
   //telem.println("Left");
@@ -82,6 +83,9 @@ void set_speed(int motor_speed) {
   throttleRight = motor_speed;
   throttleLeft = motor_speed;
 }
+
+
+
 
 
 
