@@ -5,12 +5,12 @@
 #include <Streaming.h>
 #include <StopWatch.h>
 #include <Servo.h>
-
-#undef min
-#undef max
 #include <vector>
+
 #include "Constants.h"
 #include "IOpins.h"
+#include "init.h"
+#include "initrcduino.h"
 
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
@@ -31,60 +31,14 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *lMotor = AFMS.getMotor(1);
 Adafruit_DCMotor *rMotor = AFMS.getMotor(2);
 
-// Uncomment this line to use long range mode. This
-// increases the sensitivity of the sensor and extends its
-// potential range, but increases the likelihood of getting
-// an inaccurate reading because of reflections from objects
-// other than the intended target. It works best in dark
-// conditions.
+/* Set the delay between fresh samples for BNO055*/
+#define BNO055_SAMPLERATE_DELAY_MS (100)
+Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-//#define LONG_RANGE
+Servo panServo;
+Servo tiltServo;
 
-
-// Uncomment ONE of these two lines to get
-// - higher speed at the cost of lower accuracy OR
-// - higher accuracy at the cost of lower speed
-
-//#define HIGH_SPEED
-//#define HIGH_ACCURACY
-
-//#define	SingleShot
-//=======================================================//
-
-int roam = 0;
-int stop_flag = 0;
-int rc_mode_toggle = 0;
-int rc_sw_on = 0;
-int odo_mode_toggle = 0;
-
-//rcarduino shared variables
-// holds the update flags defined above
-volatile uint8_t bUpdateFlagsShared;
-
-// shared variables are updated by the ISR and read by loop.
-// In loop we immediatley take local copies so that the ISR can keep ownership of the
-// shared ones. To access these in loop
-// we first turn interrupts off with noInterrupts
-// we take a copy to use in loop and the turn interrupts back on
-// as quickly as possible, this ensures that we are always able to receive new signals
-volatile uint16_t unThrottleInShared;
-volatile uint16_t unSteeringInShared;
-volatile uint16_t unRCInShared;
-
-// These are used to record the rising edge of a pulse in the calcInput functions
-// They do not need to be volatile as they are only used in the ISR. If we wanted
-// to refer to these in loop and the ISR then they would need to be declared volatile
-uint32_t ulThrottleStart;
-uint32_t ulSteeringStart;
-uint32_t ulRCStart;
-
-//uint8_t throttleLeft;
-//uint8_t throttleRight;
-int tDeadZoneRange, sDeadZoneRange;
-
-uint8_t motor_on = 0;
-
-// Set elapsed time constants
+// Set elapsed timers
 elapsedMillis motorFwd;
 elapsedMillis motorFwdRunTime;
 elapsedMillis motorTurnTime;
@@ -93,48 +47,6 @@ elapsedMillis turn_timer;
 elapsedMillis odo_timer;
 
 StopWatch etm_millis;
-
-Servo panServo;
-Servo tiltServo;
-
-int panZero = 85;
-int tiltZero = 100;
-
-String str1, str2;
-int gapAngle[10];
-float gapDist[10];
-int i, j, k;
-
-//Globals
-float roll, pitch;
-float fXg = 0;
-float fYg = 0;
-float fZg = 0;
-float gyroz, accelx, accely;
-
-// global for heading from compass
-float yar_heading, new_heading;
-float rebound_angle;
-
-// Compass navigation
-float targetHeading,              // where we want to go to reach current waypoint
-      currentHeading,             // where we are actually facing now
-      headingError,               // signed (+/-) difference between targetHeading and currentHeading
-	    init_heading;
-		
-float pos_x,
-      pos_y,
-      ENCODER_SCALE_FACTOR;
-
-//encoder variables
-int ticksRR,
-     ticksLR;
-volatile int kcount_revs_l,
-             kcount_revs_r;
-
-/* Set the delay between fresh samples for BNO055*/
-#define BNO055_SAMPLERATE_DELAY_MS (100)
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 void setup() {
 	telem.begin(57600);           // set up Serial library at 9600 bps
@@ -172,7 +84,10 @@ void setup() {
     init_ticks_counter();
     attach_encoders();
 
-    telem.println("I'm Ready to receive telem Commands![f, b, r, l, s, t]"); // Tell us I"m ready
+    //Calculate Encoder Scale factor
+    ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
+
+    telem.println("I'm Ready to receive telem Commands![m, o, c, t]"); // Tell us I"m ready
 
 }
 
@@ -190,101 +105,15 @@ void loop()
 
   if (telem.available() > 0)
   {
-    int val = telem.read();	//read telem input commands
-
-    turn_time_mult = telem.parseInt();
-    if(turn_time_mult == 0)
-                turn_time_mult = 4;          
+    int val = telem.read();	//read telem input commands        
     
     switch(val)
     {
-  
-    case 'f' : 
-      motorFwdRunTime = 0;
-      motorFwd = 0;
-      set_speed(speed);
-      gDirection = DIRECTION_FORWARD;        
-      telem.println("Rolling Forward!");
-      mForward();
-      etm_millis.start();   
-      //  Read encoders
-      init_ticks_counter(); 
-      while(motorFwdRunTime < defaultFwdTime){
-          mForward();
-          //Read encoders and calculate RPM
-      }
-      mStop();
-      get_ticks_reset();
-      telem << ticksLR << ", " << ticksRR << endl;
-      stop_flag = 0; 
-      etm_millis.stop();
-      motorFwdRunTime = 0;
-      break;
-      
-    case 'l' :
-      motorTurnTime = 0;
-      //===================================================
-      // Used for turn calibration curve
-      //===================================================
-      //compass_update();
-      //telem << "Current heading: " << yar_heading << endl;
-      //telem << "Turn Multiplier: " << turn_time_mult << endl;
-      //telem.println("Turning Left!");
-      set_speed(turnSpeed);
-      //compass_update();
-      //telem << "Change heading: " << turn_time_mult*100 << ", " << (float) yar_heading << ", ";
-       mLeft();
-      //delay(400);  //was 2000
-      delay(turn_time_mult * 100);
-      mStop();
-      while(motorTurnTime < defaultTurnTime) {
-       }
-      mStop();
-      //compass_update();
-      //telem << (float) yar_heading << endl;
-
-      motorTurnTime = 0;
-      break;
-      
-    case 'r' :
-      //===================================================
-      // Used for turn calibration curve
-      //===================================================
-      //telem << "Turn Multiplier: " << turn_time_mult << endl;
-      //telem.println("Turning Right!");
-      //compass_update();
-      set_speed(turnSpeed);
-      //compass_update();
-      //telem << "Change heading: " << turn_time_mult*100 << ", " << (float) yar_heading << ", ";
-      mRight();
-      //delay(400);
-      delay(turn_time_mult * 100);
-      mStop();
-      while(motorTurnTime < defaultTurnTime) {
-        }
-      mStop();
-      //compass_update();
-      //telem << (float) yar_heading << endl;
-      motorTurnTime = 0;
-      break;
-      
-    case 'b' :    
-      motorRevTime = 0;    
-      telem.println("Moving Backward!");
-      //moveBackward(motorSpeed);
-      set_speed(backup_high);
-      mBackward();
-      while(motorRevTime < defaultRevTime) {
-        }
-      mStop();
-      motorRevTime = 0;
-      break;
-      
-    case 's' :      
-      telem.println("Stop!");
-      mStop();
-      break;
-
+      case 'm':
+        telem << "Toggle Manual Mode ON" << endl;
+        goManual();
+        break;
+        
     case 't' :      
       telem.println("toggle Roam Mode"); 
       set_speed(speed);
@@ -305,25 +134,18 @@ void loop()
       telem.println("Read Sensors and turn");
       readSensors();
       break;
-
-    case 'e' : 
-      motorFwdRunTime = 0;
-      motorFwd = 0;
-      //odo_timer = 0;
-      set_speed(speed);
-      gDirection = DIRECTION_FORWARD;        
-      telem.println("Rolling Forward!");
-      mForward();
-      smartDelay2(10000);
-      mStop();
-      stop_flag = 0; 
-      motorFwdRunTime = 0;
-      break;
     }
           
     delay(1);  
-    telem.println("I'm Ready to receive telem Commands![f, b, r, l, s, t]"); // Tell us I"m ready
+    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
+
+  if(manual == 0){ 
+      //just listen for telem commands and wait
+      }
+  else if(manual == 1){  //If roam active- drive autonomously
+    goManual();
+    }
 
   if(roam == 0){ 
       //just listen for telem commands and wait
@@ -365,8 +187,7 @@ void toggleRoam(){
     roam = 0;
     mStop();
     telem.println("De-activated Roam Mode");
-    telem.println("I'm Ready to receive telem Commands![g, f, b, r, l, s, t, c]"); // Tell us I"m ready
-
+    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
 }
 
@@ -387,7 +208,7 @@ void toggleRC(){
     etm_millis.stop();
     etm_millis.reset();
     telem.println("De-activated RC Mode");
-	  telem.println("I'm Ready to receive telem Commands![g, f, b, r, l, s, t, c, w, o]"); // Tell us I"m ready
+    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
 }
 
@@ -395,14 +216,21 @@ void goRC() {
 	rc_control();   
 }
 
-static void smartDelay2(unsigned long ms)
-{
-  unsigned long start = millis();
-  do 
-  {
-    //getTicks();
-    //send_telemetry();
-  } while (millis() - start < ms);
+void goManual(){
+  modeManual();
+}
+
+void toggleManual(){
+  // This method chooses to make the robot roam or else use the telem command input.
+  if(manual_toggle == 0){
+   manual_toggle = 1;
+   telem.println("Manual Mode Activated");
+  } else {
+    manual_toggle = 0;
+    mStop();
+    telem.println("De-activated Manual Mode");
+    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
+  }
 }
 
 void toggleOdo(){
@@ -416,9 +244,21 @@ void toggleOdo(){
     odo_mode_toggle = 0;
     mStop();
     telem << "Odometry Nav De-activated" << endl;
-    telem.println("I'm Ready to receive telem Commands![g, f, b, r, l, s, t, c, w, o]"); // Tell us I"m ready
+    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
 }
+
+
+static void smartDelay2(unsigned long ms)
+{
+  unsigned long start = millis();
+  do 
+  {
+    //getTicks();
+    //send_telemetry();
+  } while (millis() - start < ms);
+}
+
 
 
 

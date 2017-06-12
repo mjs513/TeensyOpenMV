@@ -73,7 +73,11 @@ void odometry(){
  interrupts();
  ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
  float odo_start_distance = 0;
- int odo_start = 0;
+ //int odo_start = 0;
+
+ telem << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
+ telem << "Follow direction commands with number of incdhes, f5 for forward 5 inches" << endl;
+ telem << " o - to exit odometry mode" << endl;
  
  while(odo_mode_toggle == 1){
   while (telem.available() > 0) {
@@ -85,12 +89,20 @@ void odometry(){
     if(turn_time_mult == 0)
                 turn_time_mult = 0;          
 
-    if(odo_start == 0){
-      odo_start = 1;
-    }
+    //if(odo_start == 0){
+    //  odo_start = 1;
+    //}
     
     odo_start_distance = turn_time_mult;
     
+    runODO(val, turn_time_mult);
+  }
+ }
+}
+
+void runODO(int val, int turn_time_mult)
+{
+
     switch(val)
     {
       case 'f' : 
@@ -194,8 +206,8 @@ void odometry(){
       mStop();
       break;
     }
-  }
- }
+
+    telem << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
 }
 
 
