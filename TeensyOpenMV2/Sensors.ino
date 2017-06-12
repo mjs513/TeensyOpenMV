@@ -1,6 +1,8 @@
 void readSensors()
 {
    float new_heading;
+   uint8_t numAngles, indexBestAngle;
+   float camAngles;
   
    if(telem2.available() > 0) {
       for(i = 0; i < 3; i++){
@@ -8,61 +10,70 @@ void readSensors()
         telem << str1 << endl;
       }
       
-      j = getValue(str1, ',', 0).toInt();       //Get number of gaps
-      if(j > 0){
-        for(i = 1; i < j+1; i++){
-          k = getValue(str1, ',', i).toInt();   //Get gap angles
-          gapAngle[i-1] = k;
-          panServo.write(panZero + k);          //Move servo to first gap
+      numAngles = getValue(str1, ',', 0).toInt();       //Get number of gaps
+      if(numAngles > 0){
+        for(i = 1; i < numAngles+1; i++){
+          camAngles = getValue(str1, ',', i).toInt();   //Get gap angles
+          gapAngle[i-1] = camAngles;
+          panServo.write(panZero + camAngles);          //Move servo to first gap
           delay(100);
           
-          telem << "Gap Angle: " << k << ", Gap Distance: ";
+          telem << "Gap Angle: " << camAngles << ", Gap Distance: ";
           gapDist[i-1] = sensor.readRangeSingleMillimeters()/10;
           if (sensor.timeoutOccurred()) { 
             telem << " TIMEOUT"; 
+            return;
           }
           telem << gapDist[i-1] << " -- ";
-          telem << endl;
+          telem << endl;        
         }
+
+        panServo.write(panZero);
+        
+        indexBestAngle = getIndexOfMaximumValue(gapDist, numAngles);
+        telem << indexBestAngle << ", " << gapAngle[indexBestAngle] << ", " << gapDist[indexBestAngle] << endl;
+        
+        if(gapDist[indexBestAngle] < obsDist) {
+          Select_Direction();
+          compass_update(); 
+          new_heading = yar_heading - rebound_angle;
+          telem << "Heading from (CAMSD): " << endl;
+          turnCorrection(rebound_angle);
+        } else {
+          telem << "Heading from (cam): " << endl;
+          turnCorrection(gapAngle[indexBestAngle]); 
+        }
+        
       } else {
         telem << "NO VISIABLE GAP!" << endl;
         if(sensor.readRangeSingleMillimeters()/10 < obsDist){ 
           Select_Direction();
-          compass_update(); 
-          telem << "Current heading (DC): " << yar_heading << endl;
-          new_heading = yar_heading - rebound_angle;
+          telem << "Heading from (DC): " << endl;
+          turnCorrection(rebound_angle);
         } else {
           telem << "Ok to move forward 25 cm" << endl;
+          panServo.write(panZero);
         }
       }
   }
-  panServo.write(panZero);
 
-  if(j > 0){
-    k = getIndexOfMaximumValue(gapDist, j);
-    telem << j << ", " << gapAngle[k] << ", " << gapDist[k] << endl;
-    compass_update(); 
-    new_heading = yar_heading - (gapAngle[k]);
-  }
-  
-  telem << "Current heading (cam): " << yar_heading << endl;
-  telem << "Actual calc for new heading: " << new_heading << endl;
+}
 
-  if(gapDist[k] < obsDist) {
-    Select_Direction();
-  }
-  
+void turnCorrection(float delta_heading){
+  compass_update();
+  float new_heading = yar_heading - delta_heading;
   if(new_heading > 360.0f)
      new_heading -= 360.0f;
   else if(new_heading < 0.0f)
     new_heading = 360.0f + new_heading;
-  
-  pivotTo(new_heading);
-  
-  delay(2000);
-  
-}
 
+  telem << "Current heading: " << yar_heading << endl;
+  telem << "Actual calc for new heading: " << new_heading << endl;
+
+  pivotTo(new_heading);
+
+  delay(1000);
+}
 
 void compass_update() {
     sensors_event_t event;

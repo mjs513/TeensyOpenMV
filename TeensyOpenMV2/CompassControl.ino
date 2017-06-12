@@ -26,7 +26,7 @@ void pivotTo(int target){
     //telem << "\t" << currentAngle << ", " << target << ", " << diff << endl;
     
     if(diff > 0) {
-      telem << "Turning Right" << endl;
+      //telem << "Turning Right" << endl;
       throttleRight = turnSpeed;
       throttleLeft = turnSpeed;
       mRight();//right

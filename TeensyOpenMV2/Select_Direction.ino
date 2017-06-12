@@ -60,7 +60,7 @@ void Select_Direction() {
     //
     /////////////////////////////////////////////////////////
 
-    for(i =0; i <= N; i++)
+    for(i = 0; i <= N; i++)
     {
       panServo.write(i*angle);               
       delay(100);    //was 550                         
