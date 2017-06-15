@@ -7,19 +7,18 @@
 #include <Servo.h>
 #include <vector>
 
+#include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_MS_PWMServoDriver.h"
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BNO055.h>
+#include <utility/imumaths.h>
+#include <VL53L0X.h>
+
 #include "Constants.h"
 #include "IOpins.h"
 #include "init.h"
 #include "initrcduino.h"
 
-#include <Adafruit_MotorShield.h>
-#include "utility/Adafruit_MS_PWMServoDriver.h"
-
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BNO055.h>
-#include <utility/imumaths.h>
-
-#include <VL53L0X.h>
 
 //Create VL53L0X instance
 VL53L0X sensor;
@@ -137,7 +136,7 @@ void loop()
     }
           
     delay(1);  
-    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
+    //telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
 
   if(manual == 0){ 
@@ -199,7 +198,7 @@ void toggleRC(){
   // This method chooses to make the robot roam or else use the telem command input.
   if(rc_mode_toggle == 0){
    rc_mode_toggle = 1;
-   telem.println("Activated RC Mode");
+   telem << "Activated RC Mode" << endl;
    etm_millis.start();
   } else {
     rc_mode_toggle = 0;
@@ -207,8 +206,8 @@ void toggleRC(){
     mStop();
     etm_millis.stop();
     etm_millis.reset();
-    telem.println("De-activated RC Mode");
-    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
+    telem << endl << "De-activated RC Mode" << endl;
+    telem << "I'm Ready to receive Mode Commands![m, o, c, t]" << endl; // Tell us I"m ready
   }
 }
 
@@ -216,35 +215,36 @@ void goRC() {
 	rc_control();   
 }
 
-void goManual(){
-  modeManual();
-}
-
 void toggleManual(){
   // This method chooses to make the robot roam or else use the telem command input.
   if(manual_toggle == 0){
    manual_toggle = 1;
-   telem.println("Manual Mode Activated");
+   telem << "Manual Mode Activated" << endl;
   } else {
     manual_toggle = 0;
     mStop();
-    telem.println("De-activated Manual Mode");
+    telem << "De-activated Manual Mode" << endl << endl;
     telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
   }
 }
+
+void goManual(){
+  modeManual();
+}
+
 
 void toggleOdo(){
   if(odo_mode_toggle == 0) {
     odo_mode_toggle = 1;
     telem << "Odometry Nav Activated" << endl;
-    telem.println("I'm Ready to receive telem Commands![f (inches), b (inches), r (degs), l (degs), s, o]");
+    //telem.println("I'm Ready to receive telem Commands![f (inches), b (inches), r (degs), l (degs), s, o]");
     pos_x = pos_y = 0;
     odometry();
   } else {
     odo_mode_toggle = 0;
     mStop();
     telem << "Odometry Nav De-activated" << endl;
-    telem.println("I'm Ready to receive Mode Commands![m, o, c, t]"); // Tell us I"m ready
+    telem << "I'm Ready to receive Mode Commands![m, o, c, t]" << endl; // Tell us I"m ready
   }
 }
 

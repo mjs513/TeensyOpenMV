@@ -33,5 +33,5 @@ int RCMODE_IN_PIN   = 22;
 
 // read the hall effect sensor on pin 2
 const int l_encoder = 14;
-const int r_encoder = 24;
+const int r_encoder = 15;
 

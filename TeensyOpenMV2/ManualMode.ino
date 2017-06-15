@@ -1,15 +1,9 @@
 void modeManual(){
-  telem << "Entered Manual Mode" << endl;
 
   int val;
   while(1){
     if(telem.available() > 0) {
       val = telem.read();  //read telem input commands  
-      if(val == 'm') {
-        telem.println("Toggle Manual Mode Off"); 
-        toggleManual();
-        return;
-      }
 
     turn_time_mult = telem.parseInt();
     if(turn_time_mult == 0)
@@ -17,6 +11,11 @@ void modeManual(){
                 
     switch(val)
     {
+    case 'm':
+        telem << "Toggle Manual Mode Off" << endl; 
+        manual_toggle = 1;
+        toggleManual();
+        return;
     case 'f' : 
       motorFwdRunTime = 0;
       motorFwd = 0;
@@ -118,7 +117,7 @@ void modeManual(){
       motorFwdRunTime = 0;
       break;
     }
-    telem << "Available commands [f, b, l, r, m]" << endl;
+    telem << endl << "Available commands [f, b, l, r, m]" << endl;
     }
   }
 }

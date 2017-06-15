@@ -75,9 +75,9 @@ void odometry(){
  float odo_start_distance = 0;
  //int odo_start = 0;
 
- telem << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
+ telem << endl << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
  telem << "Follow direction commands with number of incdhes, f5 for forward 5 inches" << endl;
- telem << " o - to exit odometry mode" << endl;
+ telem << " o - to exit odometry mode" << endl << endl;
  
  while(odo_mode_toggle == 1){
   while (telem.available() > 0) {
@@ -201,10 +201,11 @@ void runODO(int val, int turn_time_mult)
       break;
 
     case 'o' :
-      telem.println("Toggle Odometry!");
-      toggleOdo();
+      //telem.println("Toggle Odometry!");
       mStop();
-      break;
+      odo_mode_toggle = 1;
+      toggleOdo();
+      return;
     }
 
     telem << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
