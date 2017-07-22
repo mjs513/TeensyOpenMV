@@ -59,8 +59,13 @@ void send_odometry(){
       float Displacement = (left_encoder_count + right_encoder_count)*ENCODER_SCALE_FACTOR/2.0;
       //float Rotation = (left_encoder_count - right_encoder_count)*ENCODER_SCALE_FACTOR/TRACK;
 
-      pos_x = pos_x + Displacement * cos(yar_heading-init_heading);
-      pos_y = pos_y + Displacement * sin(yar_heading-init_heading);
+
+      if(yar_heading > 180.0){
+        yar_heading = yar_heading - 360.0;
+      }
+
+      pos_x = pos_x + Displacement * cos(radians(yar_heading-init_heading));
+      pos_y = pos_y + Displacement * sin(radians(yar_heading-init_heading));
 
       telem << pos_x << "," << pos_y  << endl;
 
@@ -70,39 +75,39 @@ void send_odometry(){
 }
 
 void odometry(){
- interrupts();
- ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
- float odo_start_distance = 0;
- //int odo_start = 0;
+  interrupts();
+  ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
+  float odo_start_distance = 0;
+  //int odo_start = 0;
 
- telem << endl << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
- telem << "Follow direction commands with number of incdhes, f5 for forward 5 inches" << endl;
- telem << " o - to exit odometry mode" << endl << endl;
- 
- while(odo_mode_toggle == 1){
-  while (telem.available() > 0) {
-    int val = telem.read();  //read telem input commands
+  telem << endl << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
+  telem << "Follow direction commands with number of incdhes, f5 for forward 5 inches" << endl;
+  telem << " o - to exit odometry mode" << endl << endl;
 
-    turn_time_mult = telem.parseInt();
-    turn_time_mult = turn_time_mult + odo_start_distance;  
+  pos_x = pos_y = 0;
+  while(odo_mode_toggle == 1){
+    while (telem.available() > 0) {
+      int val = telem.read();  //read telem input commands
 
-    if(turn_time_mult == 0)
+      turn_time_mult = telem.parseInt();
+      //turn_time_mult = turn_time_mult + odo_start_distance;  
+
+      if(turn_time_mult == 0)
                 turn_time_mult = 0;          
 
-    //if(odo_start == 0){
-    //  odo_start = 1;
-    //}
+      //if(odo_start == 0){
+      //  odo_start = 1;
+      //}
     
-    odo_start_distance = turn_time_mult;
+      odo_start_distance = turn_time_mult;
     
-    runODO(val, turn_time_mult);
+      runODO(val, turn_time_mult);
+    }
   }
- }
 }
 
 void runODO(int val, int turn_time_mult)
 {
-
     switch(val)
     {
       case 'f' : 
@@ -112,8 +117,13 @@ void runODO(int val, int turn_time_mult)
         telem << "Rolling Forward!" << endl;
         telem << turn_time_mult << endl;
 
-        //compass_update();
-        init_heading = yar_heading;
+        compass_update();
+        if(yar_heading > 180.0) {
+          init_heading = yar_heading - 360.0;
+        } else {
+          init_heading = yar_heading;
+        }
+        
         etm_millis.start();
         send_odometry();
         mForward();
@@ -137,7 +147,7 @@ void runODO(int val, int turn_time_mult)
       telem.println("Turning to New Heading");
       set_speed(turnSpeed);
       
-      //compass_update();
+      compass_update();
       new_heading = yar_heading - turn_time_mult;
       
       if(new_heading < 0){
@@ -155,14 +165,14 @@ void runODO(int val, int turn_time_mult)
       telem.println("Turning to New Heading");
       set_speed(turnSpeed);
       
-      //compass_update();
+      compass_update();
       new_heading = turn_time_mult + yar_heading;
 
       if(new_heading > 360.){
         new_heading = new_heading - 360.;
       }
 
-      telem << turn_time_mult << "," << (float) yar_heading << endl;
+      //telem << turn_time_mult << "," << (float) yar_heading << endl;
       
       pivotToOdo(new_heading, yar_heading);
            
@@ -237,11 +247,6 @@ void pivotToOdo(int target, int currentAngle){
       throttleLeft = turnSpeed;
       mLeft();//left
     }
-    
-    //if (odo_timer > defaultOdoTime){
-    //   send_odometry();
-    //   odo_timer = 0;
-    //}
 
     compass_update();
     currentAngle = yar_heading;

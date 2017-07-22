@@ -21,19 +21,25 @@
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-#define telem Serial3   //Connection for radio on 3, change to serial for telem
+#define telem Serial   //Connection for radio on 3, change to serial for telem
 #define telem2  Serial2 //Connection for OpenMV
 
 #define rad2deg 57.2957795131
 #define deg2rad 0.01745329251
 #define m2ft 3.280839895
 
+//Malek Systems RGB LED WS2812B
+#define DATA_PIN 31
+#define NUM_LEDS 8
+#define BRIGHTNESS  64
+CRGB leds[NUM_LEDS];
+
 // the interval in mS 
 //#define interval 7500    //was 7500
 #define interval 100
 #define interval1 2000
 #define defaultTurnTime 1000
-#define defaultFwdTime 5000 //was 7000
+#define defaultFwdTime 2500 //was 7000
 #define defaultRevTime 700
 #define defaultTelemTime 1000
 #define defaultWayPointTime 1000
@@ -72,12 +78,12 @@ float wp_heading;
 
 //Set Motor Speed
 int speed = 150;
-int turnSpeed = 150;
+int turnSpeed = 175;
 int backup_high = 150;
 int backup_low = 100;
-uint8_t throttleRight = 150;          //define motor speed parameter which will be mapped as a percentage value
+uint8_t throttleRight = 175;          //define motor speed parameter which will be mapped as a percentage value
                                      // with canakit seems like i have to increase this value, increase to 50
-uint8_t throttleLeft = 150;           // offset required for differences in motor speed,82, (84/86)
+uint8_t throttleLeft = 175;           // offset required for differences in motor speed,82, (84/86)
 
 //Adjustment factors to make rover go straight.  
 //Also used for odometry

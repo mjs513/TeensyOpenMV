@@ -7,6 +7,8 @@
 #include <Servo.h>
 #include <vector>
 
+#include <FastLED.h>
+
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 #include <Adafruit_Sensor.h>
@@ -18,7 +20,6 @@
 #include "IOpins.h"
 #include "init.h"
 #include "initrcduino.h"
-
 
 //Create VL53L0X instance
 VL53L0X sensor;
@@ -61,6 +62,11 @@ void setup() {
   
 	AFMS.begin();  // create with the default frequency 1.6KHz
   telem.println("Adafruit Motorshield v2 - Initialized!");
+
+  //LED Setup
+  delay(2000);
+  FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.setBrightness(  BRIGHTNESS );
   
 	// Set the speed to start, from 0 (off) to 255 (max speed)
 	lMotor->setSpeed(150);
@@ -113,26 +119,45 @@ void loop()
         goManual();
         break;
         
-    case 't' :      
-      telem.println("toggle Roam Mode"); 
-      set_speed(speed);
-      toggleRoam();
-      break;
+      case 't' :      
+        telem.println("toggle Roam Mode"); 
+        set_speed(speed);
+        toggleRoam();
+        break;
 	  
-    case 'c' :
-      telem.println("toggle RC control mode");
-      toggleRC();
-      break;
+      case 'c' :
+        telem.println("toggle RC control mode");
+        toggleRC();
+        break;
 
-    case 'o' :
-      telem << "Odometry Activated" << endl;
-      toggleOdo();
-      break;
+      case 'o' :
+        telem << "Odometry Activated" << endl;
+        toggleOdo();
+        break;
 
-    case 'g' :
-      telem.println("Read Sensors and turn");
-      readSensors();
-      break;
+      case 'g' :
+        telem.println("Read Sensors and turn");
+        readSensors();
+        break;
+
+      case 'L' :
+        telem.println("Turn Lights On");
+        for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed = whiteLed + 1) {
+          // Turn our current led on to white, then show the leds
+          leds[whiteLed] = CRGB::White;
+          // Show the leds (only one of which is set to white, from above)
+        }
+        FastLED.show();
+        break;
+      
+      case 'O' :
+        telem.println("Turn Lights Off");
+        for(int blkLed = 0; blkLed < NUM_LEDS; blkLed = blkLed + 1) {
+          // Turn our current led back to black for the next loop around
+          leds[blkLed] = CRGB::Black;
+        }
+        FastLED.show();
+        break;
     }
           
     delay(1);  
@@ -239,6 +264,7 @@ void toggleOdo(){
     telem << "Odometry Nav Activated" << endl;
     //telem.println("I'm Ready to receive telem Commands![f (inches), b (inches), r (degs), l (degs), s, o]");
     pos_x = pos_y = 0;
+    init_ticks_counter();
     odometry();
   } else {
     odo_mode_toggle = 0;

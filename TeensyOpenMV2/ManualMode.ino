@@ -102,7 +102,6 @@ void modeManual(){
       mStop();
       break;
 
-
     case 'e' : 
       motorFwdRunTime = 0;
       motorFwd = 0;
@@ -116,8 +115,31 @@ void modeManual(){
       stop_flag = 0; 
       motorFwdRunTime = 0;
       break;
-    }
-    telem << endl << "Available commands [f, b, l, r, m]" << endl;
+
+    case 'g' :
+      telem.println("Read Sensors and turn");
+      readSensors();
+      break;
+      
+    case 'L' :
+      telem.println("Turn Lights On");
+      for(int whiteLed = 0; whiteLed < NUM_LEDS; whiteLed = whiteLed + 1) {
+        // Turn our current led on to white, then show the leds
+        leds[whiteLed] = CRGB::White;
+      }
+      // Show the leds (only one of which is set to white, from above)
+      FastLED.show();
+      break;
+      
+    case 'O' :
+      telem.println("Turn Lights Off");
+      for(int blkLed = 0; blkLed < NUM_LEDS; blkLed = blkLed + 1) {
+        // Turn our current led back to black for the next loop around
+        leds[blkLed] = CRGB::Black;
+      }
+      break;
+      }
+     telem << endl << "Available commands [f, b, l, r, m]" << endl;
     }
   }
 }
