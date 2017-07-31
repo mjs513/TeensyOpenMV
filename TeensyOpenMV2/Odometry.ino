@@ -59,9 +59,17 @@ void send_odometry(){
       float Displacement = (left_encoder_count + right_encoder_count)*ENCODER_SCALE_FACTOR/2.0;
       //float Rotation = (left_encoder_count - right_encoder_count)*ENCODER_SCALE_FACTOR/TRACK;
 
-
-      if(yar_heading > 180.0){
+      if(yar_heading > 180.0 && gDirection == DIRECTION_FORWARD){
         yar_heading = yar_heading - 360.0;
+      }
+
+      // Calculate back bearing if going backward
+      if(gDirection == DIRECTION_REVERSE) {
+        if(yar_heading >= 180.0) {     
+          yar_heading = yar_heading - 180.0;
+        } else if( yar_heading < 180) {
+          yar_heading = yar_heading + 180.0; 
+        }
       }
 
       pos_x = pos_x + Displacement * cos(radians(yar_heading-init_heading));
@@ -76,8 +84,9 @@ void send_odometry(){
 
 void odometry(){
   interrupts();
-  ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
-  float odo_start_distance = 0;
+  //ENCODER_SCALE_FACTOR = WHEEL_DIA*PI/CLICKS_PER_REV;
+  ENCODER_SCALE_FACTOR = DISTANCE_CALIB / CLICKS_CALIB;
+  float odo_start_distance = 0.0;
   //int odo_start = 0;
 
   telem << endl << "Avaialbe Commands: [f, b, l, r, o]. " << endl;
@@ -99,7 +108,8 @@ void odometry(){
       //  odo_start = 1;
       //}
     
-      odo_start_distance = turn_time_mult;
+      //odo_start_distance = turn_time_mult;
+      odo_start_distance = 0.0;
     
       runODO(val, turn_time_mult);
     }
@@ -123,12 +133,11 @@ void runODO(int val, int turn_time_mult)
         } else {
           init_heading = yar_heading;
         }
-        
         etm_millis.start();
         send_odometry();
         mForward();
         
-       while(pos_x < turn_time_mult){
+       while(abs(pos_x) < turn_time_mult){
         //currentTime = millis();
         if (odo_timer > defaultOdoTime){
           //compass_update();
@@ -185,6 +194,15 @@ void runODO(int val, int turn_time_mult)
         gDirection = DIRECTION_REVERSE;        
         telem.println("Rolling Backward!");
 
+        compass_update();
+        
+        // Calculate back bearing
+        if(yar_heading > 180.0) {
+          init_heading = yar_heading - 180.0;
+        } else {
+          init_heading = yar_heading + 180.0;
+        }
+
         mBackward();
         etm_millis.start();
         send_odometry();
@@ -202,12 +220,16 @@ void runODO(int val, int turn_time_mult)
       etm_millis.stop();
       etm_millis.reset();
       pos_x = pos_y = 0;
-      motorRevTime = 0;
       break;
       
     case 's' :      
       telem.println("Stop!");
       mStop();
+      break;
+
+    case 'g' :
+      telem.println("Read Sensors and turn");
+      readSensors();
       break;
 
     case 'o' :

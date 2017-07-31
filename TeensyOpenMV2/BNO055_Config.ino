@@ -37,7 +37,6 @@ void BNO055_Init() {
 
     int eeAddress = 0;
     long bnoID;
-    bool foundCalib = false;
 
     EEPROM.get(eeAddress, bnoID);
 
@@ -66,7 +65,6 @@ void BNO055_Init() {
         bno.setSensorOffsets(calibrationData);
 
         telem.println("\n\nCalibration data loaded into BNO055");
-        foundCalib = true;
     }
 
     delay(1000);

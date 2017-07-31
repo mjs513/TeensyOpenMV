@@ -32,11 +32,12 @@ void Select_Direction() {
     // set local variables
     //
     ///////////////////////////
-    int i, start, left, delay_time;
+    //int i, start, left, delay_time;
+    int i, start, left;
     float fit_time, new_angle, Delta_Angle, angle_delta;
     float numer, denom;
     unsigned int sonar_dist[N+1], Hist[N+1];
-    unsigned int nowidegap = 1;
+    unsigned int nowidegap;
 
     /////////////////////////////////////////////////////
     //
@@ -53,6 +54,10 @@ void Select_Direction() {
     //std::vector<std::pair<float,float> > rebound; 
     float rebound_first[15], rebound_second[15];
 
+    start = 0;
+    new_angle = Delta_Angle = angle_delta = 0.0f;
+    nowidegap = 1;
+    
     /////////////////////////////////////////////////////////
     //
     // Rotate head by N angles defined in Constants.h
@@ -169,12 +174,11 @@ void Select_Direction() {
         // narrow opening: aim for the centre if so desired
         // 
         ////////////////////////////////////////////////////
-
         new_angle = border[i].first + (border[i].second - border[i].first) / 2.0;
         //telem << "DELTA ANGLE: " << Delta_Angle << endl;
         //telem << "Narrow Opening (New Angle):  " << new_angle << endl;
       } else {
-        new_angle =+ (border[i].second - border[i].first) / 2.0;
+        new_angle = (border[i].second - border[i].first) / 2.0;
         //telem << "Wide Opening (Center):  " << new_angle << endl;
         nowidegap = 0;
         
@@ -183,7 +187,6 @@ void Select_Direction() {
         // Calculate Bubble rebound angles for wide opening  
         //
         ////////////////////////////////////////////////////
- 
         numer = 0;  denom =0;
         //telem << "a-BORDER: " << border[i].first << " ,   " << border[i].second << endl;
         int start_index = border[i].first/angle;

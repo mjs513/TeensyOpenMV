@@ -4,7 +4,7 @@
 #include <elapsedMillis.h>
 #include <Streaming.h>
 #include <StopWatch.h>
-#include <Servo.h>
+#include <PWMServo.h>
 #include <vector>
 
 #include <FastLED.h>
@@ -35,8 +35,8 @@ Adafruit_DCMotor *rMotor = AFMS.getMotor(2);
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-Servo panServo;
-Servo tiltServo;
+PWMServo panServo;
+PWMServo tiltServo;
 
 // Set elapsed timers
 elapsedMillis motorFwd;
@@ -49,7 +49,7 @@ elapsedMillis odo_timer;
 StopWatch etm_millis;
 
 void setup() {
-	telem.begin(57600);           // set up Serial library at 9600 bps
+	telem.begin(57600);
   Wire.begin();
   telem2.begin(115200);
 
@@ -77,9 +77,9 @@ void setup() {
 	attachInterrupt(RCMODE_IN_PIN, togRCMode, CHANGE);
 	throttleLeft = throttleRight = speed;
 
-    panServo.attach(23);
+    panServo.attach(23, 450, 2350); // some motors need min/max setting
     panServo.write(panZero);
-    tiltServo.attach(38);
+    tiltServo.attach(38, 450, 2350); // some motors need min/max setting
     tiltServo.write(tiltZero);
   
     //Enable pull ups on encoders

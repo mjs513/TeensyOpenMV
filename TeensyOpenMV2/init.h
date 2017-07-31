@@ -29,7 +29,7 @@ uint8_t manual_toggle = 0;
 
 uint8_t motor_on = 0;
 
-int panZero = 85;
+int panZero = 80;
 int tiltZero = 100;
 
 // Motor control

@@ -41,9 +41,9 @@ void readSensors()
           turnCorrection(rebound_angle);
         } else {
           telem << "Heading from (cam): " << endl;
+          new_heading = new_heading;
           turnCorrection(gapAngle[indexBestAngle]); 
         }
-        
       } else {
         telem << "NO VISIABLE GAP!" << endl;
         if(sensor.readRangeSingleMillimeters()/10 < obsDist){ 

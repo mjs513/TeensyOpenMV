@@ -21,7 +21,7 @@
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //============================================================================
 
-#define telem Serial   //Connection for radio on 3, change to serial for telem
+#define telem Serial3   //Connection for radio on 3, change to serial for telem
 #define telem2  Serial2 //Connection for OpenMV
 
 #define rad2deg 57.2957795131
@@ -55,7 +55,7 @@ const int angle = 6;  //was 20 degrees, was 15 for 12
 //const int N = 25;  //was 10, 12 for 12 readings, was 12
 //const int angle = 7.5;  //was 20 degrees, was 15 for 12
 
-int obsDist = 29;
+unsigned int obsDist = 29;
 float MIN_DISTANCE = 10;
 //int fowardheadThreshold = 29; //was 49, 39, 29; was 27, increase to 32 (2/6)
 
@@ -82,21 +82,23 @@ int turnSpeed = 175;
 int backup_high = 150;
 int backup_low = 100;
 uint8_t throttleRight = 175;          //define motor speed parameter which will be mapped as a percentage value
-                                     // with canakit seems like i have to increase this value, increase to 50
+                                      // with canakit seems like i have to increase this value, increase to 50
 uint8_t throttleLeft = 175;           // offset required for differences in motor speed,82, (84/86)
 
 //Adjustment factors to make rover go straight.  
 //Also used for odometry
-float lf_mtr_adj = 0.87;
-float rt_mtr_adj = 1.0;
+float lf_mtr_adj = 1.0;
+float rt_mtr_adj = 0.96;
 
 int turn_time_mult = 2;
 int turn_time;
 
-//***Odometry constants
+//***Odometry constants, dimenstions in inches
 #define TRACK 4.4
 #define WHEEL_DIA 2.3
 #define CLICKS_PER_REV 168
+#define DISTANCE_CALIB  39.5  // centimeters
+#define CLICKS_CALIB    392.5 // average clicks for distance calibration
 
 
 

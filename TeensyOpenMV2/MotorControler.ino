@@ -26,7 +26,7 @@
 void mForward()
 { 
   //gDirection = DIRECTION_FORWARD;
-  motor_on == 1;
+  //motor_on == 1;
 	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
 	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	lMotor->run(FORWARD); // Motor 1 goes forward
@@ -39,7 +39,7 @@ void mForward()
 void mBackward()
 {
   //gDirection = DIRECTION_REVERSE;
-  motor_on = 1;
+  //motor_on = 1;
 	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
 	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	lMotor->run(BACKWARD); // Motor 2 goes back
@@ -50,7 +50,7 @@ void mBackward()
 void mRight()
 {
 	//gDirection = DIRECTION_ROTATE_RIGHT;
-	motor_on = 1;
+	//motor_on = 1;
 	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
 	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	rMotor->run(BACKWARD); // Turns off motor 2
@@ -61,7 +61,7 @@ void mRight()
 void mLeft()
 {
 	//gDirection = DIRECTION_ROTATE_LEFT;
-	motor_on = 1;
+	//motor_on = 1;
 	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
 	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	rMotor->run(FORWARD); // Motor 2 goes forward
@@ -72,7 +72,7 @@ void mLeft()
 void mStop()
 {
   gDirection = DIRECTION_STOP;
-  motor_on = 0;
+  //motor_on = 0;
 	lMotor->run(RELEASE); // Turns off motor 1
 	rMotor->run(RELEASE); // Turns off motor 2
   //telem.println("Brake");
