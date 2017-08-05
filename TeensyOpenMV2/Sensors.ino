@@ -16,9 +16,9 @@ void readSensors()
           camAngles = getValue(str1, ',', i).toInt();   //Get gap angles
           gapAngle[i-1] = camAngles;
           panServo.write(panZero + camAngles);          //Move servo to first gap
-          
-          gapDist[i-1] = sensor.readRangeSingleMillimeters()/10;
+
           delay(400);
+          gapDist[i-1] = sensor.readRangeSingleMillimeters()/10;  //range in cm
           telem << "Gap Angle: " << camAngles << ", Gap Distance: ";
           if (sensor.timeoutOccurred()) { 
             telem << " TIMEOUT"; 
@@ -29,6 +29,7 @@ void readSensors()
         }
 
         panServo.write(panZero);
+        delay(100);
         
         indexBestAngle = getIndexOfMaximumValue(gapDist, numAngles);
         telem << indexBestAngle << ", " << gapAngle[indexBestAngle] << ", " << gapDist[indexBestAngle] << endl;

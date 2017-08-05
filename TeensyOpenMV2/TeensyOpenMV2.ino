@@ -6,6 +6,7 @@
 #include <StopWatch.h>
 #include <PWMServo.h>
 #include <vector>
+#include <string.h>
 
 #include <FastLED.h>
 
