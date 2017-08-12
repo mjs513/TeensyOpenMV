@@ -1,0 +1,54 @@
+# Untitled - By: CyberPalin - Mon May 1 2017
+
+
+import sensor, image, time, array
+
+sensor.reset() # Initialize the camera sensor.
+sensor.set_pixformat(sensor.GRAYSCALE) # or sensor.RGB565
+sensor.set_framesize(sensor.QQVGA) # or sensor.QVGA (or others)
+sensor.skip_frames(30) # Let new settings take affect.
+sensor.set_gainceiling(8)
+clock = time.clock() # Tracks FPS.
+
+StepSize = 8
+
+EdgeArray = array.array('I', [])
+
+while(True):
+    clock.tick() # Track elapsed milliseconds between snapshots().
+    img = sensor.snapshot() # Take a picture and return the image.
+
+    # The only argument is the kernel size. N coresponds to a ((N*2)+1)^2
+    # kernel size. E.g. 1 == 3x3 kernel, 2 == 5x5 kernel, etc. Note: You
+    # shouldn't ever need to use a value bigger than 2.
+    img.mean(1)
+
+    # Use Canny edge detector
+    img.find_edges(image.EDGE_CANNY, threshold=(50, 80))
+
+    imagewidth = img.width() - 1
+    imageheight = img.height() - 1
+
+    print(imagewidth)
+    print(imageheight)
+
+    for j in range(0,imagewidth,StepSize):    #for the width of image array
+        for i in range(imageheight-5,0,-1):    #step through every pixel in height of array from bottom to top
+                                               #Ignore first couple of pixels as may trigger due to undistort
+            if img.get_pixel(i,j) == 255:      #check to see if the pixel is white which indicates an edge has been found
+                EdgeArray.append((j,i))        #if it is, add x,y coordinates to ObstacleArray
+                break                          #if white pixel is found, skip rest of pixels in column
+            else:                              #no white pixel found
+                EdgeArray.append((j,0))        #if nothing found, assume no obstacle. Set pixel position way off the screen to indicate
+                                               #no obstacle detected
+
+
+    #for x in range (len(EdgeArray)-1):      #draw lines between points in ObstacleArray
+    #    cv2.line(img, EdgeArray[x], EdgeArray[x+1],(0,255,0),1)
+    #for x in range (len(EdgeArray)):        #draw lines from bottom of the screen to points in ObstacleArray
+    #    cv2.line(img, (x*StepSize,imageheight), EdgeArray[x],(0,255,0),1)
+
+
+    #print(clock.fps()) # Note: Your OpenMV Cam runs about half as fast while
+    # connected to your computer. The FPS should increase once disconnected.
+

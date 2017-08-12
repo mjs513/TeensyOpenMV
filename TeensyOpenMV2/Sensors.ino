@@ -46,18 +46,25 @@ void readSensors()
           turnCorrection(gapAngle[indexBestAngle]); 
         }
       } else {
-        telem << "NO VISIABLE GAP!" << endl;
-        if(sensor.readRangeSingleMillimeters()/10 < obsDist){ 
+        camAngles = getValue(str1, ',', 1).toInt();
+        if(camAngles == -99) {
+          telem << "NO VISIABLE GAP!" << endl;
+          if(sensor.readRangeSingleMillimeters()/10 < obsDist){ 
+            Select_Direction();
+            telem << "Heading from (DC): " << endl;
+            turnCorrection(rebound_angle);
+          } else {
+            telem << "Ok to move forward 25 cm" << endl;
+            panServo.write(panZero);
+          }
+        } else if(camAngles == 99) {
+          telem << "No Gaps - 100% Obstacle !" << endl;
           Select_Direction();
           telem << "Heading from (DC): " << endl;
-          turnCorrection(rebound_angle);
-        } else {
-          telem << "Ok to move forward 25 cm" << endl;
-          panServo.write(panZero);
+          turnCorrection(rebound_angle);    
         }
-      }
+     }
   }
-
 }
 
 void turnCorrection(float delta_heading){
@@ -111,7 +118,6 @@ void compass_update() {
   }  
 
 
-  
   
 // Curtesy of
 // https://arduino.stackexchange.com/questions/1013/how-do-i-split-an-incoming-string

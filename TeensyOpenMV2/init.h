@@ -30,7 +30,7 @@ uint8_t manual_toggle = 0;
 uint8_t motor_on = 0;
 
 int panZero = 80;
-int tiltZero = 100;
+int tiltZero = 90;
 
 // Motor control
 #define DIRECTION_STOP 0

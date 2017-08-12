@@ -43,7 +43,7 @@ void init_ticks_counter(){
 void get_ticks_noreset(){
   ticksRR = kcount_revs_r/rt_mtr_adj;
   ticksLR = kcount_revs_l/lf_mtr_adj;
-  //telem << ticksLR << ", " << ticksRR << ", ";
+  if(printFlag == 1) telem << ticksLR << ", " << ticksRR << ", ";
 }
 
 void get_ticks_reset(){

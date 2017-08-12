@@ -55,7 +55,10 @@ const int angle = 6;  //was 20 degrees, was 15 for 12
 //const int N = 25;  //was 10, 12 for 12 readings, was 12
 //const int angle = 7.5;  //was 20 degrees, was 15 for 12
 
-unsigned int obsDist = 29;
+unsigned int obsDist = 35;  //was 29
+unsigned int maxRange = 250;
+unsigned int rangeModifier = 100;
+unsigned int printFlag = 0;
 float MIN_DISTANCE = 10;
 //int fowardheadThreshold = 29; //was 49, 39, 29; was 27, increase to 32 (2/6)
 
@@ -87,8 +90,8 @@ uint8_t throttleLeft = 175;           // offset required for differences in moto
 
 //Adjustment factors to make rover go straight.  
 //Also used for odometry
-float lf_mtr_adj = 1.0;
-float rt_mtr_adj = 0.96;
+float lf_mtr_adj = 0.96;
+float rt_mtr_adj = 1.0;
 
 int turn_time_mult = 2;
 int turn_time;

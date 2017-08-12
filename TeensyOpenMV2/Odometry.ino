@@ -6,11 +6,12 @@ void send_odometry(){
       //telem << time.timestamp(DateTime::TIMESTAMP_TIME);
       //telem << utc << ",";
 
-      //telem << etm_millis.elapsed()/1000. << ",";
+      if(printFlag == 1) telem << etm_millis.elapsed()/1000. << ",";
            
       // IMU
       compass_update();
-      //telem << (float) -roll << "," << (float) -pitch << "," << (float) yar_heading << ",";
+      if(printFlag == 1) 
+            telem << (float) -roll << "," << (float) -pitch << "," << (float) yar_heading << ",";
 
       //Wheel Encoders
       get_ticks_noreset();
@@ -78,7 +79,7 @@ void send_odometry(){
       pos_x = pos_x + Displacement * cos(radians(theta-init_heading));  //radial distance
       pos_y = pos_y + Displacement * sin(radians(theta-init_heading));
 
-      //telem << pos_x << "," << pos_y << endl;
+      if(printFlag == 1) telem << pos_x << "," << pos_y << endl;
 
       init_ticks_counter();
       //telem_timer = 0;

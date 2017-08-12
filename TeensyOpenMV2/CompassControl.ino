@@ -22,8 +22,8 @@ void pivotTo(int target){
     int currentAngle = wp_heading;
     int diff = target - currentAngle;
 
-    telem << "Compass Control: " << endl;
-    telem << "\t" << currentAngle << ", " << target << ", " << diff << endl;
+    if(printFlag == 1) telem << "Compass Control: " << endl;
+    if(printFlag == 1) telem << "\t" << currentAngle << ", " << target << ", " << diff << endl;
     
     if(diff > 0) {
       //telem << "Turning Right" << endl;
