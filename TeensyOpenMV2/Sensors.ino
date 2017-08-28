@@ -1,52 +1,98 @@
 void readSensors()
 {
    float new_heading;
-   uint8_t numAngles, indexBestAngle;
+   int numAngles, indexBestAngle, actAngle;
    float camAngles;
-  
+   
+   readTSL2561();
+   String str3 = "";
+   int tempAngles = 0;
+   
    if(telem2.available() > 0) {
-      for(i = 0; i < 3; i++){
-        str1 = telem2.readStringUntil('\n');
-        telem << str1 << endl;
-      }
-      
-      numAngles = getValue(str1, ',', 0).toInt();       //Get number of gaps
-      if(numAngles > 0){
-        for(i = 1; i < numAngles+1; i++){
-          camAngles = getValue(str1, ',', i).toInt();   //Get gap angles
-          gapAngle[i-1] = camAngles;
-          panServo.write(panZero + camAngles);          //Move servo to first gap
 
-          delay(400);
-          gapDist[i-1] = sensor.readRangeSingleMillimeters()/10;  //range in cm
-          telem << "Gap Angle: " << camAngles << ", Gap Distance: ";
+      numAngles = 0;
+  	  for(j = 0; j < numPanAngles; j++){
+  		  panServo.write(panAngles[j] + panZero);
+
+  		  for(i = 0; i < numMVObs; i++){
+    			strObsArray[i] = telem2.readStringUntil('\n');
+    			if(DEBUG == 1) telem << strObsArray[i] << endl;
+  		  }
+		  
+  		  for(i = 0; i < numMVObs; i++){
+    			tempAngles = getValue(strObsArray[i], ',', 0).toInt();       //Get number of gaps
+    			if(tempAngles == 0){
+    				continue;
+    			} else {
+    				for(ii = 1; ii < tempAngles + 1; ii++){
+              actAngle = (panAngles[j] + getValue(strObsArray[i], ',', ii).toInt());
+    					str3 = str3 + actAngle + ",";
+    				}
+    				numAngles += tempAngles;
+    			}
+  		  }
+       
+        delay(400);	  
+	    }
+     
+      if(DEBUG == 1) {
+        telem << numAngles << endl;
+        telem << str3 << endl;
+        telem << endl;
+      }
+       
+      if(numAngles > 0){
+        for(i = 0; i < numAngles; i++){
+          camAngles = getValue(str3, ',', i).toInt();   //Get gap angles
+          gapAngle[i] = camAngles;         
+        }
+
+        int newNumAngles = getDups(gapAngle, numAngles);
+        numAngles = newNumAngles;
+        if(DEBUG == 1){
+          for(ii = 0; ii < numAngles; ii++) {
+            if(gapAngle[ii] != -1)
+            telem << gapAngle[ii] << " ";
+          }
+          telem << endl;
+        }
+
+        
+        for(i = 0; i < numAngles; i++){
+          panServo.write(gapAngle[i]);          //Move servo to first gap
+          delay(200);
+          gapDist[i] = sensor.readRangeSingleMillimeters()/10;  //range in cm
+          delay(100);
+          if(DEBUG == 1) telem << "Gap Angle: " << gapAngle[i] << ", Gap Distance: ";
           if (sensor.timeoutOccurred()) { 
-            telem << " TIMEOUT"; 
+            telem << " TIMEOUT" << endl; 
             return;
           }
-          telem << gapDist[i-1] << " -- ";
-          telem << endl;        
+          if(DEBUG == 1) telem << gapDist[i] << " -- " << endl;
         }
 
         panServo.write(panZero);
         delay(100);
         
         indexBestAngle = getIndexOfMaximumValue(gapDist, numAngles);
-        telem << indexBestAngle << ", " << gapAngle[indexBestAngle] << ", " << gapDist[indexBestAngle] << endl;
+        if(DEBUG == 1) {
+          telem << "Best Angle: ";
+          telem << indexBestAngle << ", " << gapAngle[indexBestAngle] << ", " << gapDist[indexBestAngle] << endl;
+        }
         
         if(gapDist[indexBestAngle] < obsDist) {
           Select_Direction();
           compass_update(); 
           new_heading = yar_heading - rebound_angle;
-          telem << "Heading from (CAMSD): " << endl;
+          if(DEBUG == 1) telem << "Heading from (CAMSD): " << endl;
           turnCorrection(rebound_angle);
         } else {
-          telem << "Heading from (cam): " << endl;
+          if(DEBUG == 1) telem << "Heading from (cam): " << endl;
           new_heading = new_heading;
           turnCorrection(gapAngle[indexBestAngle]); 
         }
       } else {
-        camAngles = getValue(str1, ',', 1).toInt();
+        camAngles = getValue(str3, ',', 1).toInt();
         if(camAngles == -99) {
           telem << "NO VISIABLE GAP!" << endl;
           if(sensor.readRangeSingleMillimeters()/10 < obsDist){ 
@@ -150,5 +196,22 @@ int getIndexOfMaximumValue(float* array, int size){
   return maxIndex;
 }
 
+int getDups(int* arr, int size)
+{
+  for(int i = 0; i < size; ++i)
+    for(int j = i+1; j < size;)
+    {
+      if(arr[i] == arr[j])
+      {
+        for(k = j; k < size-1; ++k)
+            arr[k] = arr[k+1];
+        --size;
+      } else {
+        ++ j;
+      }
+    }
+
+    return size;
+}
 
 

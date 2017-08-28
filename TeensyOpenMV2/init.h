@@ -45,10 +45,10 @@ uint8_t gThrottleDirection = DIRECTION_STOP;
 uint8_t gDirection = DIRECTION_STOP;
 uint8_t gOldDirection = DIRECTION_STOP;
 
-String str1, str2;
-int gapAngle[10];
-float gapDist[10];
-int i, j, k;
+//String str1, str2;
+String str2;
+int i, ii, j, k;
+
 
 //Globals
 float roll, pitch;
@@ -76,5 +76,9 @@ int ticksRR,
      ticksLR;
 volatile int kcount_revs_l,
              kcount_revs_r;
+
+//TSL2561
+int valueLux;
+
 
 

@@ -22,16 +22,20 @@ void pivotTo(int target){
     int currentAngle = wp_heading;
     int diff = target - currentAngle;
 
-    if(printFlag == 1) telem << "Compass Control: " << endl;
-    if(printFlag == 1) telem << "\t" << currentAngle << ", " << target << ", " << diff << endl;
+    if(printFlag == 1) {
+      telem << "Compass Control: " << endl;
+      telem << "\t" << currentAngle << ", " << target << ", " << diff << endl;
+    }
+
     
     if(diff > 0) {
-      //telem << "Turning Right" << endl;
+      if(printFlag == 1) telem << "Turning Right" << endl;
       throttleRight = turnSpeed;
       throttleLeft = turnSpeed;
       mRight();//right
       delay(50);
     } else {
+      if(printFlag == 1) telem << "Turning Left" << endl;
       throttleRight = turnSpeed;
       throttleLeft = turnSpeed;
       mLeft();//left
@@ -45,6 +49,9 @@ void pivotTo(int target){
   }
   mStop();
 }
+
+
+
 
 
 

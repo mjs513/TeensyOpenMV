@@ -62,11 +62,11 @@ void mLeft()
 {
 	//gDirection = DIRECTION_ROTATE_LEFT;
 	//motor_on = 1;
+  //telem.println("Left");
 	lMotor->setSpeed(throttleLeft*lf_mtr_adj);
 	rMotor->setSpeed(throttleRight*rt_mtr_adj);
 	rMotor->run(FORWARD); // Motor 2 goes forward
-	lMotor->run(BACKWARD); // turns off motor 1
-  //telem.println("Left");
+	lMotor->run(BACKWARD); // Motor 1 goes backward
 }
 
 void mStop()
@@ -82,6 +82,9 @@ void set_speed(int motor_speed) {
   throttleRight = motor_speed;
   throttleLeft = motor_speed;
 }
+
+
+
 
 
 

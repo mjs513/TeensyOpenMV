@@ -1,4 +1,4 @@
- void rc_control() {
+void rc_control() {
  
 	while( rc_mode_toggle == 1) {
 		//telem.println();
@@ -257,6 +257,9 @@ bool rangeTest(uint16_t number, uint16_t lower, uint16_t upper) {
       return false;
     }
 }
+
+
+
 
 
 

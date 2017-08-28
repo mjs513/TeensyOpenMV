@@ -24,9 +24,21 @@
 #define telem Serial3   //Connection for radio on 3, change to serial for telem
 #define telem2  Serial2 //Connection for OpenMV
 
+unsigned int printFlag = 0;
+unsigned int DEBUG     = 0;
+
 #define rad2deg 57.2957795131
 #define deg2rad 0.01745329251
 #define m2ft 3.280839895
+
+//OpenMV Contstants
+//Setup panservo angle array of ints
+int panAngles [] = {30, 0, -30};
+int numPanAngles = 3;
+int numMVObs = 4;
+int gapAngle[60];
+float gapDist[60];
+String strObsArray[4];
 
 //Malek Systems RGB LED WS2812B
 #define DATA_PIN 31
@@ -55,10 +67,9 @@ const int angle = 6;  //was 20 degrees, was 15 for 12
 //const int N = 25;  //was 10, 12 for 12 readings, was 12
 //const int angle = 7.5;  //was 20 degrees, was 15 for 12
 
-unsigned int obsDist = 35;  //was 29
+unsigned int obsDist = 29;  //was 29
 unsigned int maxRange = 250;
 unsigned int rangeModifier = 100;
-unsigned int printFlag = 0;
 float MIN_DISTANCE = 10;
 //int fowardheadThreshold = 29; //was 49, 39, 29; was 27, increase to 32 (2/6)
 
@@ -90,7 +101,7 @@ uint8_t throttleLeft = 175;           // offset required for differences in moto
 
 //Adjustment factors to make rover go straight.  
 //Also used for odometry
-float lf_mtr_adj = 0.96;
+float lf_mtr_adj = 0.95;
 float rt_mtr_adj = 1.0;
 
 int turn_time_mult = 2;
@@ -102,6 +113,9 @@ int turn_time;
 #define CLICKS_PER_REV 168
 #define DISTANCE_CALIB  39.5  // centimeters
 #define CLICKS_CALIB    392.5 // average clicks for distance calibration
+
+
+
 
 
 

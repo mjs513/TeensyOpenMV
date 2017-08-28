@@ -76,3 +76,6 @@ uint8_t gOldGear = GEAR_NONE;
 
 uint8_t gMode = MODE_RUN;
 uint32_t ulProgramModeExitTime = 0; 
+
+
+

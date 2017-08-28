@@ -13,6 +13,7 @@
 #include <Adafruit_MotorShield.h>
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 #include <Adafruit_Sensor.h>
+#include <Adafruit_TSL2561_U.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <VL53L0X.h>
@@ -35,6 +36,10 @@ Adafruit_DCMotor *rMotor = AFMS.getMotor(2);
 /* Set the delay between fresh samples for BNO055*/
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
+
+//TSL2561 config
+Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
+
 
 PWMServo panServo;
 PWMServo tiltServo;
@@ -60,7 +65,20 @@ void setup() {
   telem << "VL53L0X Initialized" << endl;
 
   BNO055_Init();
+
+  //setup TSL2561 lux sensor
+  /* Initialise the sensor */
+  if(!tsl.begin())
+  {
+    /* There was a problem detecting the TSL2561 ... check your connections */
+    telem << "Ooops, no TSL2561 detected ... Check your wiring or I2C ADDR!" << endl;
+    while(1);
+  }
+  /* Setup the sensor gain and integration time */
+  TSL2561_configureSensor();
+  TSL2561_displaySensorDetails();
   
+  //Setup motor shield  
 	AFMS.begin();  // create with the default frequency 1.6KHz
   telem.println("Adafruit Motorshield v2 - Initialized!");
 
@@ -112,9 +130,17 @@ void loop()
   if (telem.available() > 0)
   {
     int val = telem.read();	//read telem input commands        
+
+    int valMod = telem.parseInt();
+    if(valMod == 0)
+                valMod = 3; 
     
     switch(val)
     {
+      case 'M':
+        telem2.println(valMod);
+        break;
+      
       case 'm':
         telem << "Toggle Manual Mode ON" << endl;
         goManual();
@@ -285,6 +311,9 @@ static void smartDelay2(unsigned long ms)
     //send_telemetry();
   } while (millis() - start < ms);
 }
+
+
+
 
 
 

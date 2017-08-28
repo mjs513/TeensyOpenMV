@@ -5,14 +5,13 @@ import network, usocket, sys
 # Constants
 WiFi = 0
 Serial = 1
-enable_lens_corr = False
 
 obsVertThresh = 60
 
-StepSize = 4
+StepSize = 2
 test = True
 
-setMode = 3     #no light mode adjustmment
+setMode = 3     #0 light mode adjustmment
                 #1 = Auto
                 #2 = Home
                 #3 = Night
@@ -24,11 +23,19 @@ setMode = 3     #no light mode adjustmment
 #VFOV = 43.28 degrees
 #DFOV = 115 degrees (guess here)
 HFOV = 51.47
+enable_lens_corr = False
 
-SSID =''     # Network SSID
-KEY  =''     # Network key
+#For the Ultra wide angle
+#HFOV = 86 degrees
+#VFOV = 86 degrees
+#DFOV = 182 degrees (guess here)
+#enable_lens_corr = True
+#HFOV = 86
+
+SSID ='CyberPalin'     # Network SSID
+KEY  ='michaelmariano'     # Network key
 HOST =''     # Use first available interface
-PORT = 8080  # Arbitrary non-privileged port
+PORT = 80  # Arbitrary non-privileged port
 
 
 sensor.reset()                          # Reset and initialize the sensor.
@@ -172,7 +179,7 @@ if (sensor.get_id() == sensor.OV7725):
 while(test):
     clock.tick()                    # Update the FPS clock.
     img = sensor.snapshot()         # Take a picture and return the image.
-    if enable_lens_corr: img.lens_corr(2.5) # for 2.8mm lens...
+    if enable_lens_corr: img.lens_corr(2.0    ) # for 2.8mm lens...
     #img.save("bg.bmp")              # Used to superimpose picture over obs indicators
     img.mean(2)
     img.find_edges(image.EDGE_CANNY)
@@ -196,7 +203,7 @@ while(test):
 
         flag = False
         for y in range(img.height()):
-            z = img.height() - 5 - y
+            z = img.height() - 4 - y
             if img.get_pixel(x, z):
                 EdgeArray.append((x, z))
                 flag = True
@@ -205,6 +212,8 @@ while(test):
         if not flag:
             EdgeArray.append((x, 0))
 
+    #for i in range(len(EdgeArray)):
+    #    print(EdgeArray[i][0], EdgeArray[i][1], sep=", ")
     # Old code to draw lines to points, left here for reference
     #old = None
     #for i in range(len(EdgeArray)):
@@ -316,14 +325,14 @@ while(test):
 
         #idxmxp = all_indices(mxP, w1)
         for index, value in enumerate(w1):
-            if value > 18:     #WAS 25
+            if value > 18:     #WAS 25, 18, 20 for stepsize=4
                 idxmxp.append(index)
                 #print(index)
         #print("Max index in widthPixel Array: ", idxmxp)
 
         #Middle of Gap and half postion in total pixels
         for i in range(len(idxmxp)):
-           a1 = (w1[idxmxp[i]]/2 + startGapArray[idxmxp[i]])
+           a1 = (2.0 * w1[idxmxp[i]]/2 + startGapArray[idxmxp[i]])
            if a1 < 80:
                 deg = -HFOV
                 a1 = 80 - a1
@@ -363,15 +372,16 @@ while(test):
             print(len(pos), 99, sep=", ")
 
     #Read serial if anything available
-    if uart.any() > 0:
-        setMode = uart.readchar()
-        setLighting(setMode)
+    if Serial == 1:
+        if uart.any() > 0:
+            setMode = uart.readchar()
+            setLighting(setMode)
 
     # modify image in case you want to suppose actual image analzed
     #img.blend("bg.bmp", alpha=127)
 
     if WiFi == 1:
-        cimage = img.compressed(quality=90)
+        cimage = img.compressed(quality=20)
         client.send("\r\n--openmv\r\n" \
                     "Content-Type: image/jpeg\r\n" \
                     "Content-Length:"+str(cimage.size())+"\r\n\r\n")
