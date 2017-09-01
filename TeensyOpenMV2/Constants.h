@@ -33,12 +33,12 @@ unsigned int DEBUG     = 0;
 
 //OpenMV Contstants
 //Setup panservo angle array of ints
-int panAngles [] = {30, 0, -30};
-int numPanAngles = 3;
-int numMVObs = 4;
+int panAngles [] = {0};
+int numPanAngles = 1;
+int numMVObs = 5;
 int gapAngle[60];
 float gapDist[60];
-String strObsArray[4];
+String strObsArray[5];
 
 //Malek Systems RGB LED WS2812B
 #define DATA_PIN 31
@@ -67,8 +67,8 @@ const int angle = 6;  //was 20 degrees, was 15 for 12
 //const int N = 25;  //was 10, 12 for 12 readings, was 12
 //const int angle = 7.5;  //was 20 degrees, was 15 for 12
 
-unsigned int obsDist = 29;  //was 29
-unsigned int maxRange = 250;
+int obsDist = 29;  //was 29
+int maxRange = 250;
 unsigned int rangeModifier = 100;
 float MIN_DISTANCE = 10;
 //int fowardheadThreshold = 29; //was 49, 39, 29; was 27, increase to 32 (2/6)
@@ -89,6 +89,10 @@ float wp_heading;
 #define TURN_SPEED_DIFF = 75;
 #define SLOW_SPEED 20
 //#define NORMAL_SPEED speed
+
+const int left_45 = 513; 
+const int right_45 = 543;
+
 
 //Set Motor Speed
 int speed = 150;
@@ -113,6 +117,7 @@ int turn_time;
 #define CLICKS_PER_REV 168
 #define DISTANCE_CALIB  39.5  // centimeters
 #define CLICKS_CALIB    392.5 // average clicks for distance calibration
+
 
 
 

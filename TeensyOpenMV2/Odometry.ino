@@ -16,6 +16,10 @@ void send_odometry(){
       //Wheel Encoders
       get_ticks_noreset();
 
+      stasis();
+      telem << " ---- " << motor_on <<  "," << stasis_err << ", " << stasis_flag << ", ";
+      telem << endl;
+
       /********************************************************************/
       /*                                                                  */
       /*        Begin odometry                                            */
@@ -317,6 +321,7 @@ void pivotToOdo(int target, int currentAngle){
 }
 
  
+
 
 
 

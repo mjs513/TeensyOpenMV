@@ -27,6 +27,8 @@ uint8_t odo_mode_toggle = 0;
 uint8_t manual = 0;
 uint8_t manual_toggle = 0;
 
+uint8_t stasis_err = 0;
+uint8_t stasis_flag = 0;
 uint8_t motor_on = 0;
 
 int panZero = 80;
@@ -79,6 +81,7 @@ volatile int kcount_revs_l,
 
 //TSL2561
 int valueLux;
+
 
 
 

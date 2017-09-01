@@ -76,6 +76,7 @@ def light_mode_home():
     sensor.__write_reg(0x13, 0xfd)  #AWB off
     sensor.__write_reg(0x01, 0x96)
     sensor.__write_reg(0x02, 0x40)
+    sensor.__write_reg(0x03, 0x80)
     sensor.__write_reg(0x0e, 0x65)
     sensor.__write_reg(0x2d, 0x00)
     sensor.__write_reg(0x2e, 0x00)
@@ -95,6 +96,7 @@ def light_mode_cloudy():
     sensor.__write_reg(0x13, 0xfd)  #AWB off
     sensor.__write_reg(0x01, 0x58)
     sensor.__write_reg(0x02, 0x60)
+    sensor.__write_reg(0x03, 0x80)
     sensor.__write_reg(0x0e, 0x65)
     sensor.__write_reg(0x2d, 0x00)
     sensor.__write_reg(0x2e, 0x00)
@@ -103,6 +105,7 @@ def light_mode_office():
     sensor.__write_reg(0x13, 0xfd);
     sensor.__write_reg(0x01, 0x84);
     sensor.__write_reg(0x02, 0x4c);
+    sensor.__write_reg(0x03, 0x80);
     sensor.__write_reg(0x0e, 0x65);
     sensor.__write_reg(0x2d, 0x00);
     sensor.__write_reg(0x22, 0x7f); #60Hz banding filter
@@ -325,7 +328,7 @@ while(test):
 
         #idxmxp = all_indices(mxP, w1)
         for index, value in enumerate(w1):
-            if value > 18:     #WAS 25, 18, 20 for stepsize=4
+            if value > 25:     #WAS 25, 18, 20 for stepsize=4
                 idxmxp.append(index)
                 #print(index)
         #print("Max index in widthPixel Array: ", idxmxp)

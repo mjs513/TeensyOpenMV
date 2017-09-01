@@ -31,7 +31,7 @@ void Roam()
     }
 
     //Dup code from odometry - probably make separate function
-    //measure direction and move forward 3/4 of the distance
+    //measure direction and move forward 50% of the distance
     if(range > maxRange)
         range = rangeModifier;
     turn_time_mult = 0.50 * (range);
@@ -66,6 +66,7 @@ void Roam()
         send_odometry();
         odo_timer = 0;
       }
+      
       range = sensor.readRangeSingleMillimeters()/10;
       //telem << "      Range2 = " << range << endl;
       if(range < obsDist) {
@@ -81,6 +82,7 @@ void Roam()
     mStop(); 
 	}
 }
+
 
 
 
