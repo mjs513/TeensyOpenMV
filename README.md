@@ -1,4 +1,3 @@
-
 # Teensy 3.5/OpenMV Rover
 This project was based off a couple of other rover's that I built using multi-sonar sensors for obstacle detection and avoidance.  Needless to say they eye sores with everything hanging off the platform.  For many years wanted to do something with machine vision but most of the papers and projects used stereo vision vs monocular vision.  This also required you to send back to the PC the image to process and then send the commands back.  I wanted to keep the whole system closed on the rover platform with the need for any desktop software.  That’s where the OpenMV camera came into play.  Forgot how I found out about it but when I saw it I knew I was going to start another project.
 
@@ -26,6 +25,8 @@ The whole thing is powered from a single 7.4 battery.  For power to the OpenMV c
 I designed custom break out board for the T3.5 so it would fit on a Arduino Mega type foot print with a custom IO board where I break out where i can mount Arduino break out boards.  In this case i use a Adafruit Motor Shield V2 to control the motors and a breadboard shield to hold a Adafruit TSL2561 light sensor.
 
 If the camera can not see an edge, can happen if it gets too close to walls the obstacle avoidance algorith Tuses a modified vfh/bubble alogithm is the camera can not detect edge which relies on the VL53 sensor to get distances.
+
+Source Code and this readme is found on the TeensyOpenMV github page: https://github.com/mjs513/TeensyOpenMV
 
 Here are a couple of screen shots of the rover:
 
